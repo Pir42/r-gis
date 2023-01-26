@@ -37,9 +37,12 @@ const midi_codes = {
     pot_6: 26,
     pot_7: 27,
     pot_8: 28,
+    incontrol: 12,
     note_on: 144,
     note_off: 128,
     control_change: 176,
 }
 
-module.exports = midi_codes
+const reverted_codes = Object.fromEntries(Object.entries(midi_codes).map(a => a.reverse()))
+
+module.exports = { midi_codes: midi_codes, reverted_codes: reverted_codes }
