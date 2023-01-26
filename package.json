@@ -2,7 +2,7 @@
   "name": "launchxlight",
   "version": "0.0.1",
   "description": "Control 4 LEDS strip from the Launchkey MINI",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
