@@ -1,0 +1,14 @@
+{
+  "name": "launchxlight",
+  "version": "0.0.1",
+  "description": "Control 4 LEDS strip from the Launchkey MINI",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Pierre Moinet",
+  "license": "ISC",
+  "dependencies": {
+    "midi": "^2.0.0"
+  }
+}
