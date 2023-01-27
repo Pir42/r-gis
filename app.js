@@ -1,4 +1,6 @@
 const patterns = require('./config/patterns')
+const { midi_codes: mc } = require('./config/midi_codes')
+const colors = require('./config/colors')
 const Device = require('./lib/device')
 const Launchkey = require('./lib/launckey')
 
@@ -8,13 +10,8 @@ const device_name_2 = 'Launchkey Mini LK Mini InControl'
 
 console.info("Initializing keyboard and pads devices by finding and opening ports...")
 
-
 const keyboard = new Device(device_name)
 const pads = new Device(device_name_2)
-
-
-// keyboard.input.on('message', (deltaTime, message) => { console.log(message) })
-// pads.input.on('message', (deltaTime, message) => { console.log(message) })
 
 console.info("Keyboard and Pads are initialized, activate InControl for pads")
 
@@ -52,7 +49,7 @@ lc.on('pad_selected', (data) => {
     let pattern = setup_patterns.find(p => p.pad_id == data.pad_id )
 
     if(pattern) {
-        console.log(`Received a pad_selected event assigned to pattern : ${pattern}`)
+        console.log(`Received a pad_selected event assigned to pattern "${pattern.name}"`)
         // should activate pattern and manage with WLED
         // Use trigger function ?
     }
@@ -68,5 +65,14 @@ lc.on('pot_input', (data) => {
             console.log(`Pod ${data.id} changed, a pattern is selected and this control is assigned to effect ${pattern.controls[`pod_${data.id}`]}`)
             // if so, update and send informations on WLED    
         }
+    }
+})
+
+// Colors (no need for complex class as for the pads... for now)
+
+keyboard.input.on('message', (deltaTime, message) => {
+    const [code_event, id, value] = message
+    if(code_event == mc.note_on && colors[id]) {
+        console.log(`Change the color palette of WLED with ${colors[id]}`);
     }
 })
