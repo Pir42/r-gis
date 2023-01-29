@@ -30,10 +30,43 @@ lc.light_on_pad(2)
 lc.light_on_pad(9)
 lc.light_on_pad(10)
 
+// touch and keep mode
+lc.state.pad_8['mode'] = 'keep'
+lc.state.pad_8['color'] = 113
+lc.light_on_pad(8)
+
 lc.on('pad_input', (data) => {
     if(['1', '2', '9', '10'].includes(data.id)) {
         console.log(`Segment LED control pressed on ${data.id}, should send turn ${data.state.light} to WLED`)
         // Send to WLED a turn off or on according to the segment
+    }
+
+    if(data.id == 8) {
+        if(!lc.state.pad_8.light) {
+            lc.state.pad_1['mode'] = 'touch'
+            lc.state.pad_2['mode'] = 'touch'
+            lc.state.pad_9['mode'] = 'touch'
+            lc.state.pad_10['mode'] = 'touch'
+
+            lc.light_off_pad(1)
+            lc.light_off_pad(2)
+            lc.light_off_pad(9)
+            lc.light_off_pad(10)
+
+            console.log('Turn on Touch mode for effects')
+        } else {
+            lc.state.pad_1['mode'] = 'keep'
+            lc.state.pad_2['mode'] = 'keep'
+            lc.state.pad_9['mode'] = 'keep'
+            lc.state.pad_10['mode'] = 'keep'
+
+            lc.light_on_pad(1)
+            lc.light_on_pad(2)
+            lc.light_on_pad(9)
+            lc.light_on_pad(10)
+
+            console.log('Turn off Touch mode for effects')
+        }
     }
 })
 
