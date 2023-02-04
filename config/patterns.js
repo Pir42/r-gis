@@ -8,21 +8,22 @@ const patterns = [
         },
     },
     {
-        name: 'strip',
+        name: 'fade',
         pad_id: 4,
         color: 52,
         controls: {
-            pod_1: 'speed'
+            pod_1: 'speed',
+            pod_2: 'min_brightness',
+            pod_3: 'max_brightness',
         },
     },
     ,
     {
-        name: 'x_center',
+        name: 'colors',
         pad_id: 5,
         color: 1,
         controls: {
-            pod_1: 'speed',
-            pod_2: 'revert'
+            pod_1: 'speed'
         },
     },
     {

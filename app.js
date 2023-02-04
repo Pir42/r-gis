@@ -6,6 +6,8 @@ const Launchkey = require('./lib/launckey')
 const ws281x = require('rpi-ws281x-native')
 const Segment = require('./lib/segment')
 const Strob = require('./lib/effects/Strob')
+const Fade = require('./lib/effects/Fade')
+const Colors = require('./lib/effects/Colors')
 
 // Config and initialization process
 const device_name = 'Launchkey Mini:Launchkey Mini LK Mini MIDI 20:0'
@@ -58,6 +60,13 @@ const segmentPad = (pad_id) => {
             break;
     }
     return seg
+}
+
+// Effect setup
+const effects = {
+    'strob': new Strob([seg0, seg1, seg2, seg3]),
+    'fade': new Fade([seg0, seg1, seg2, seg3]),
+    'colors': new Colors([seg0, seg1, seg2, seg3]),
 }
 
 lc.state.pad_1['mode'] = 'keep'
@@ -131,9 +140,6 @@ lc.on('pad_release', (data) => {
     }
 })
 
-// Effect setup
-let strob_effect = new Strob([seg0, seg1, seg2, seg3])
-
 // Patterns setup
 
 let setup_patterns = []
@@ -149,8 +155,21 @@ lc.on('pad_selected', (data) => {
         console.log(`Received a pad_selected event assigned to pattern "${pattern.name}"`)
         // should activate pattern and manage
         // Use trigger function ?
-        if(pattern.name == 'strob') {
-            strob_effect.run()
+        if(effects[pattern.name]) {
+            effects[pattern.name].run()
+        }
+    }
+})
+
+lc.on('pad_deselected', (data) => {
+    let pattern = setup_patterns.find(p => p.pad_id == data.pad_id )
+
+    if(pattern) {
+        console.log(`Received a pad_deselected event assigned to pattern "${pattern.name}"`)
+        // should activate pattern and manage
+        // Use trigger function ?
+        if(effects[pattern.name]) {
+            effects[pattern.name].stop()
         }
     }
 })
@@ -172,10 +191,18 @@ lc.on('pot_input', (data) => {
         if(pattern && pattern.controls[`pod_${data.id}`]) {
             console.log(`Pod ${data.id} changed, a pattern is selected and this control is assigned to effect ${pattern.controls[`pod_${data.id}`]}`)
             // if so, update and send informations
-            if(pattern.controls[`pod_${data.id}`] == 'speed' && pattern.name == 'strob') {
-                let speed_effect = Strob.MIN_SPEED - (data.state * Strob.MIN_SPEED / 127)
-                strob_effect.speed = speed_effect
+            let effect = effects[pattern.name]
+            let parameter = pattern.controls[`pod_${data.id}`]
+            if(effect && parameter) {
+                if(parameter == 'speed') {
+                    effect.speed = effect.speed_calc(data.state)
+                } else if(parameter == 'min_brightness') {
+                    effect.min_brightness = data.state * 255 / 127
+                } else if(parameter == 'max_brightness') {
+                    effect.max_brightness = data.state * 255 / 127
+                }
             }
+
         }
     }
 })
