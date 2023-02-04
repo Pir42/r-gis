@@ -3,10 +3,13 @@ const { midi_codes: mc } = require('./config/midi_codes')
 const colors = require('./config/colors')
 const Device = require('./lib/device')
 const Launchkey = require('./lib/launckey')
+const ws281x = require('rpi-ws281x-native')
+const Segment = require('./lib/segment')
+const Strob = require('./lib/effects/Strob')
 
 // Config and initialization process
-const device_name = 'Launchkey Mini LK Mini MIDI'
-const device_name_2 = 'Launchkey Mini LK Mini InControl'
+const device_name = 'Launchkey Mini:Launchkey Mini LK Mini MIDI 20:0'
+const device_name_2 = 'Launchkey Mini:Launchkey Mini LK Mini InContro 20:1'
 
 console.info("Initializing keyboard and pads devices by finding and opening ports...")
 
@@ -18,7 +21,44 @@ console.info("Keyboard and Pads are initialized, activate InControl for pads")
 pads.activateInControl()
 lc = new Launchkey(pads)
 
+// Setup the LED Segments
+const options = { dma: 10, freq: 800000, gpio: 18, invert: false, brightness: 10, stripType: ws281x.stripType.WS2812 }
+const channel = ws281x(150, options)
+
 // Setup the 4 control LED area
+console.info("Assigning LED Segments")
+
+const seg0 = new Segment(channel, 0, 36)
+const seg1 = new Segment(channel, 37, 74)
+const seg2 = new Segment(channel, 75, 112)
+const seg3 = new Segment(channel, 113, 150)
+const allsegs = [seg0, seg1, seg2, seg3]
+
+seg0.fill([0xff0000])
+seg1.fill([0xff0000])
+seg2.fill([0xff0000])
+seg3.fill([0xff0000])
+
+const segmentPad = (pad_id) => {
+    let seg = undefined
+    switch (pad_id) {
+        case '1':
+            seg = seg1
+            break;
+        case '2':
+            seg = seg2
+            break;
+        case '9':
+            seg = seg0
+            break;
+        case '10':
+            seg = seg3
+            break;
+        default:
+            break;
+    }
+    return seg
+}
 
 lc.state.pad_1['mode'] = 'keep'
 lc.state.pad_2['mode'] = 'keep'
@@ -35,10 +75,19 @@ lc.state.pad_8['mode'] = 'keep'
 lc.state.pad_8['color'] = 113
 lc.light_on_pad(8)
 
+let touch_mode = 'keep'
+
 lc.on('pad_input', (data) => {
     if(['1', '2', '9', '10'].includes(data.id)) {
         console.log(`Segment LED control pressed on ${data.id}, should send turn ${data.state.light} to WLED`)
-        // Send to WLED a turn off or on according to the segment
+        let seg = segmentPad(data.id)
+        if(data.state.light) {
+            seg.silent = false
+            seg.fill()
+        } else {
+            seg.off()
+            seg.silent = true
+        }
     }
 
     if(data.id == 8) {
@@ -54,6 +103,8 @@ lc.on('pad_input', (data) => {
             lc.light_off_pad(10)
 
             console.log('Turn on Touch mode for effects')
+            touch_mode = 'touch'
+            allsegs.forEach((seg) => { seg.off(); seg.silent = true })
         } else {
             lc.state.pad_1['mode'] = 'keep'
             lc.state.pad_2['mode'] = 'keep'
@@ -66,9 +117,22 @@ lc.on('pad_input', (data) => {
             lc.light_on_pad(10)
 
             console.log('Turn off Touch mode for effects')
+            touch_mode = 'keep'
+            allsegs.forEach((seg) => { seg.silent = false; seg.fill() })
         }
     }
 })
+
+lc.on('pad_release', (data) => {
+    if(['1', '2', '9', '10'].includes(data.id) && touch_mode == 'touch') {
+        let seg = segmentPad(data.id)
+        seg.off()
+        seg.silent = true
+    }
+})
+
+// Effect setup
+let strob_effect = new Strob([seg0, seg1, seg2, seg3])
 
 // Patterns setup
 
@@ -83,20 +147,35 @@ lc.on('pad_selected', (data) => {
 
     if(pattern) {
         console.log(`Received a pad_selected event assigned to pattern "${pattern.name}"`)
-        // should activate pattern and manage with WLED
+        // should activate pattern and manage
         // Use trigger function ?
+        if(pattern.name == 'strob') {
+            strob_effect.run()
+        }
     }
 })
 
 // Pot Management
 
 lc.on('pot_input', (data) => {
+
+    if(data.id == 8){
+        let value = data.state
+        channel.brightness = (value * 255) / 127
+        ws281x.render()
+        return
+    }
+
     if(lc.selected_pattern_pad) {
         let pattern = setup_patterns.find(p => p.pad_id == lc.selected_pattern_pad )
         
         if(pattern && pattern.controls[`pod_${data.id}`]) {
             console.log(`Pod ${data.id} changed, a pattern is selected and this control is assigned to effect ${pattern.controls[`pod_${data.id}`]}`)
-            // if so, update and send informations on WLED    
+            // if so, update and send informations
+            if(pattern.controls[`pod_${data.id}`] == 'speed' && pattern.name == 'strob') {
+                let speed_effect = Strob.MIN_SPEED - (data.state * Strob.MIN_SPEED / 127)
+                strob_effect.speed = speed_effect
+            }
         }
     }
 })
@@ -106,6 +185,7 @@ lc.on('pot_input', (data) => {
 keyboard.input.on('message', (deltaTime, message) => {
     const [code_event, id, value] = message
     if(code_event == mc.note_on && colors[id]) {
-        console.log(`Change the color palette of WLED with ${colors[id]}`);
+        console.log(`Change the color palette with ${colors[id]}`);
+        allsegs.forEach((seg) => { seg.fill(colors[id]) })
     }
 })

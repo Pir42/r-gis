@@ -1,5 +1,9 @@
 const colors = {
-    48: ['000000']
+    48: [0xff0000],
+    49: [0x00ff00],
+    50: [0x0000ff],
+    51: [0x4ff9ff, 0x0072d6, 0x000596],
+    52: [0xffbe0b, 0xfb5607, 0xff006e, 0x8338ec, 0x3a86ff]
 }
 
 module.exports = colors
