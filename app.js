@@ -8,6 +8,10 @@ const Segment = require('./lib/segment')
 const Strob = require('./lib/effects/Strob')
 const Fade = require('./lib/effects/Fade')
 const Colors = require('./lib/effects/Colors')
+const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('./lib/helpers/colors')
+
+// Helpers
+const speed_calc_pot = (value, min) => min - (value * min / 127)
 
 // Config and initialization process
 const device_name = 'Launchkey Mini:Launchkey Mini LK Mini MIDI 20:0'
@@ -84,13 +88,46 @@ lc.state.pad_8['mode'] = 'keep'
 lc.state.pad_8['color'] = 113
 lc.light_on_pad(8)
 
+// Aftertouch
+lc.state.pad_16['mode'] = 'keep'
+lc.state.pad_16['color'] = 113
+
 let touch_mode = 'keep'
+let aftertouch = false
+let aftertouch_speed = 40
+let decrease_brightness_per_seg = [
+    {
+        segment: seg0,
+        decrease_cb: undefined
+    },
+    {
+        segment: seg1,
+        decrease_cb: undefined
+    },
+    {
+        segment: seg2,
+        decrease_cb: undefined
+    },
+    {
+        segment: seg3,
+        decrease_cb: undefined
+    }
+]
+
+// Events
 
 lc.on('pad_input', (data) => {
     if(['1', '2', '9', '10'].includes(data.id)) {
-        console.log(`Segment LED control pressed on ${data.id}, should send turn ${data.state.light} to WLED`)
+        console.log(`Segment LED control pressed on ${data.id}, should send turn ${data.state.light}`)
         let seg = segmentPad(data.id)
         if(data.state.light) {
+            if (aftertouch) {
+                let decrease_object = decrease_brightness_per_seg.find(s => s.segment == seg)
+                if(decrease_object && decrease_object.decrease_cb) {
+                    clearTimeout(decrease_object.decrease_cb)
+                    decrease_object.decrease_cb = undefined
+                }
+            }
             seg.silent = false
             seg.fill()
         } else {
@@ -125,18 +162,75 @@ lc.on('pad_input', (data) => {
             lc.light_on_pad(9)
             lc.light_on_pad(10)
 
+            lc.light_off_pad(16) // turn off aftertouch
+            aftertouch = false
+
             console.log('Turn off Touch mode for effects')
             touch_mode = 'keep'
             allsegs.forEach((seg) => { seg.silent = false; seg.fill() })
         }
     }
+
+    // AfterTouch Mode
+    if(data.id == 16) {
+        if(!lc.state.pad_8.light) {
+            aftertouch = lc.state.pad_16.light
+        }
+        else {
+            lc.light_off_pad(16) // force to turn off aftertouch
+            aftertouch = lc.state.pad_16.light
+        }
+    }
+
 })
 
 lc.on('pad_release', (data) => {
     if(['1', '2', '9', '10'].includes(data.id) && touch_mode == 'touch') {
         let seg = segmentPad(data.id)
-        seg.off()
-        seg.silent = true
+        if(aftertouch) {
+            let color_off = false
+            let speed = aftertouch_speed
+            let retrieved_colors = seg.colors
+            let decrease_object = decrease_brightness_per_seg.find(s => s.segment == seg)
+
+            decrease_object.decrease_cb = () => {
+                let all_luma = []
+                retrieved_colors.forEach(() => all_luma.push(true))
+
+                retrieved_colors = retrieved_colors.map((c, i) => {
+                    let HSL = hexToHSL(intToHex(c))
+                    let luma = HSL[2]
+                    if(luma <= 0) {
+                        all_luma[i] = false
+                    }
+                    
+                    return change_brightness(intToHex(c), 0.7)
+                })
+                
+                color_off = !all_luma.every(Boolean)
+                seg.fill(retrieved_colors, false)
+                ws281x.render()
+
+                if(color_off) {
+                    seg.off()
+                    seg.silent = true
+                    clearTimeout(decrease_object.decrease_cb)
+                    decrease_object.decrease_cb = undefined
+                    return   
+                }
+
+                setTimeout(() => {
+                    if(decrease_object.decrease_cb) {
+                        decrease_object.decrease_cb()
+                    }
+                }, speed)
+            }
+
+            decrease_object.decrease_cb()
+        } else {
+            seg.off()
+            seg.silent = true
+        }
     }
 })
 
@@ -182,6 +276,11 @@ lc.on('pot_input', (data) => {
         let value = data.state
         channel.brightness = (value * 255) / 127
         ws281x.render()
+        return
+    }
+
+    if(data.id == 7){
+        aftertouch_speed = speed_calc_pot(data.state, 40)
         return
     }
 
