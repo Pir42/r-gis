@@ -250,6 +250,11 @@ lc.on('pad_selected', (data) => {
         // should activate pattern and manage
         // Use trigger function ?
         if(effects[pattern.name]) {
+            for (const [pod_id, parameter] of Object.entries(pattern.controls)) {
+                if(parameter == 'speed') {
+                    effects[pattern.name].speed = effects[pattern.name].speed_calc(lc.state[pod_id])
+                }
+            }
             effects[pattern.name].run()
         }
     }
@@ -271,6 +276,8 @@ lc.on('pad_deselected', (data) => {
 // Pot Management
 
 lc.on('pot_input', (data) => {
+
+    lc.state[`pod_${data.id}`] = data.state
 
     if(data.id == 8){
         let value = data.state
