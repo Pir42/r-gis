@@ -12,6 +12,7 @@ const StrobPerSeg = require('./lib/effects/StrobPerSeg')
 const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('./lib/helpers/colors')
 const Worm = require('./lib/effects/Worm')
 const WormRevert = require('./lib/effects/WormRevert')
+const WormManager = require('./lib/effects/WormManager')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -38,9 +39,9 @@ const channel = ws281x(150, options)
 console.info("Assigning LED Segments")
 
 const seg0 = new Segment(channel, 0, 36)
-const seg1 = new Segment(channel, 37, 74)
+const seg1 = new Segment(channel, 37, 74, true)
 const seg2 = new Segment(channel, 75, 112)
-const seg3 = new Segment(channel, 113, 150)
+const seg3 = new Segment(channel, 113, 150, true)
 const allsegs = [seg0, seg1, seg2, seg3]
 
 seg0.fill([0xff0000])
@@ -76,8 +77,8 @@ const effects = {
     'colors': new Colors([seg0, seg1, seg2, seg3]),
     'strob_per_seg': new StrobPerSeg([seg0, seg1, seg2, seg3]),
     'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true),
-    'worm': new Worm([seg0, seg1, seg2, seg3]),
-    'worm_revert': new WormRevert([seg0, seg1, seg2, seg3]),
+    'worm': new WormManager([seg0, seg1, seg2, seg3]),
+    'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true),
 }
 
 lc.state.pad_1['mode'] = 'keep'
