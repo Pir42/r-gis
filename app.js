@@ -8,7 +8,10 @@ const Segment = require('./lib/segment')
 const Strob = require('./lib/effects/Strob')
 const Fade = require('./lib/effects/Fade')
 const Colors = require('./lib/effects/Colors')
+const StrobPerSeg = require('./lib/effects/StrobPerSeg')
 const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('./lib/helpers/colors')
+const Worm = require('./lib/effects/Worm')
+const WormRevert = require('./lib/effects/WormRevert')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -71,6 +74,10 @@ const effects = {
     'strob': new Strob([seg0, seg1, seg2, seg3]),
     'fade': new Fade([seg0, seg1, seg2, seg3]),
     'colors': new Colors([seg0, seg1, seg2, seg3]),
+    'strob_per_seg': new StrobPerSeg([seg0, seg1, seg2, seg3]),
+    'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true),
+    'worm': new Worm([seg0, seg1, seg2, seg3]),
+    'worm_revert': new WormRevert([seg0, seg1, seg2, seg3]),
 }
 
 lc.state.pad_1['mode'] = 'keep'
@@ -253,6 +260,14 @@ lc.on('pad_selected', (data) => {
             for (const [pod_id, parameter] of Object.entries(pattern.controls)) {
                 if(parameter == 'speed') {
                     effects[pattern.name].speed = effects[pattern.name].speed_calc(lc.state[pod_id])
+                } else if(parameter == 'min_brightness') {
+                    effects[pattern.name].min_brightness = lc.state[pod_id] * 255 / 127
+                } else if(parameter == 'max_brightness') {
+                    effects[pattern.name].max_brightness = lc.state[pod_id] * 255 / 127
+                } else if(parameter == 'seg_length') {
+                    effects[pattern.name].worm_length = effects[pattern.name].seg_length_calc(lc.state[pod_id])
+                } else if(parameter == 'delta') {
+                    effects[pattern.name].delta = effects[pattern.name].delta_calc(lc.state[pod_id])
                 }
             }
             effects[pattern.name].run()
@@ -306,6 +321,10 @@ lc.on('pot_input', (data) => {
                     effect.min_brightness = data.state * 255 / 127
                 } else if(parameter == 'max_brightness') {
                     effect.max_brightness = data.state * 255 / 127
+                } else if(parameter == 'seg_length') {
+                    effect.worm_length = effect.seg_length_calc(data.state)
+                } else if(parameter == 'delta') {
+                    effect.delta = effect.delta_calc(data.state)
                 }
             }
 

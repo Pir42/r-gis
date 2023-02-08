@@ -34,6 +34,42 @@ const patterns = [
             pod_1: 'speed'
         },
     },
+    {
+        name: 'strob_per_seg',
+        pad_id: 7,
+        color: 1,
+        controls: {
+            pod_1: 'speed'
+        },
+    },
+    {
+        name: 'strob_rand',
+        pad_id: 11,
+        color: 52,
+        controls: {
+            pod_1: 'speed'
+        },
+    },
+    {
+        name: 'worm',
+        pad_id: 12,
+        color: 1,
+        controls: {
+            pod_1: 'speed',
+            pod_2: 'seg_length',
+            pod_3: 'delta'
+        },
+    },
+    {
+        name: 'worm_revert',
+        pad_id: 13,
+        color: 52,
+        controls: {
+            pod_1: 'speed',
+            pod_2: 'seg_length',
+            pod_3: 'delta'
+        },
+    },
 ]
 
 module.exports = patterns
