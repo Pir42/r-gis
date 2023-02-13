@@ -19,7 +19,7 @@ const patterns = [
     },
     ,
     {
-        name: 'colors',
+        name: 'colors_trans',
         pad_id: 5,
         color: 1,
         controls: {

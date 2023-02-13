@@ -12,6 +12,7 @@ const StrobPerSeg = require('./lib/effects/StrobPerSeg')
 const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('./lib/helpers/colors')
 const WormManager = require('./lib/effects/WormManager')
 const StrobDivide = require('./lib/effects/StrobDivide')
+const ColorsTrans = require('./lib/effects/ColorsTrans')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -74,7 +75,7 @@ let effect_in_use = false
 const effects = {
     'strob': new Strob([seg0, seg1, seg2, seg3]),
     'fade': new Fade([seg0, seg1, seg2, seg3]),
-    'colors': new Colors([seg0, seg1, seg2, seg3]),
+    'colors_trans': new ColorsTrans([seg0, seg1, seg2, seg3]),
     'strob_per_seg': new StrobPerSeg([seg0, seg1, seg2, seg3]),
     'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true),
     'strob_divide': new StrobDivide([seg0, seg1, seg2, seg3]),
