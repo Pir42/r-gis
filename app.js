@@ -13,6 +13,7 @@ const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('.
 const Worm = require('./lib/effects/Worm')
 const WormRevert = require('./lib/effects/WormRevert')
 const WormManager = require('./lib/effects/WormManager')
+const StrobDivide = require('./lib/effects/StrobDivide')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -71,14 +72,16 @@ const segmentPad = (pad_id) => {
 }
 
 // Effect setup
+let effect_in_use = false
 const effects = {
     'strob': new Strob([seg0, seg1, seg2, seg3]),
     'fade': new Fade([seg0, seg1, seg2, seg3]),
     'colors': new Colors([seg0, seg1, seg2, seg3]),
     'strob_per_seg': new StrobPerSeg([seg0, seg1, seg2, seg3]),
     'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true),
+    'strob_divide': new StrobDivide([seg0, seg1, seg2, seg3]),
     'worm': new WormManager([seg0, seg1, seg2, seg3]),
-    'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true),
+    'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true)
 }
 
 lc.state.pad_1['mode'] = 'keep'
@@ -258,6 +261,8 @@ lc.on('pad_selected', (data) => {
         // should activate pattern and manage
         // Use trigger function ?
         if(effects[pattern.name]) {
+            effect_in_use = true
+
             for (const [pod_id, parameter] of Object.entries(pattern.controls)) {
                 if(parameter == 'speed') {
                     effects[pattern.name].speed = effects[pattern.name].speed_calc(lc.state[pod_id])
@@ -269,6 +274,8 @@ lc.on('pad_selected', (data) => {
                     effects[pattern.name].worm_length = effects[pattern.name].seg_length_calc(lc.state[pod_id])
                 } else if(parameter == 'delta') {
                     effects[pattern.name].delta = effects[pattern.name].delta_calc(lc.state[pod_id])
+                } else if(parameter == 'divide') {
+                    effects[pattern.name].divide = effects[pattern.name].divide_calc(lc.state[pod_id])
                 }
             }
             effects[pattern.name].run()
@@ -284,6 +291,7 @@ lc.on('pad_deselected', (data) => {
         // should activate pattern and manage
         // Use trigger function ?
         if(effects[pattern.name]) {
+            effect_in_use = false
             effects[pattern.name].stop()
         }
     }
@@ -326,6 +334,8 @@ lc.on('pot_input', (data) => {
                     effect.worm_length = effect.seg_length_calc(data.state)
                 } else if(parameter == 'delta') {
                     effect.delta = effect.delta_calc(data.state)
+                } else if(parameter == 'divide') {
+                    effect.divide = effect.divide_calc(data.state)
                 }
             }
 
@@ -339,6 +349,12 @@ keyboard.input.on('message', (deltaTime, message) => {
     const [code_event, id, value] = message
     if(code_event == mc.note_on && colors[id]) {
         console.log(`Change the color palette with ${colors[id]}`);
-        allsegs.forEach((seg) => { seg.fill(colors[id]) })
+        allsegs.forEach((seg) => {
+            if(effect_in_use) {
+                seg.colors = colors[id]
+            } else {
+                seg.fill(colors[id]) 
+            }
+        })
     }
 })
