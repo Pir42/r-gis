@@ -10,8 +10,6 @@ const Fade = require('./lib/effects/Fade')
 const Colors = require('./lib/effects/Colors')
 const StrobPerSeg = require('./lib/effects/StrobPerSeg')
 const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('./lib/helpers/colors')
-const Worm = require('./lib/effects/Worm')
-const WormRevert = require('./lib/effects/WormRevert')
 const WormManager = require('./lib/effects/WormManager')
 const StrobDivide = require('./lib/effects/StrobDivide')
 
@@ -41,8 +39,8 @@ console.info("Assigning LED Segments")
 
 const seg0 = new Segment(channel, 0, 36)
 const seg1 = new Segment(channel, 37, 74, true)
-const seg2 = new Segment(channel, 75, 112)
-const seg3 = new Segment(channel, 113, 150, true)
+const seg2 = new Segment(channel, 75, 111)
+const seg3 = new Segment(channel, 112, 150, true)
 const allsegs = [seg0, seg1, seg2, seg3]
 
 seg0.fill([0xff0000])
