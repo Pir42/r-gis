@@ -261,7 +261,11 @@ lc.on('pad_selected', (data) => {
         // should activate pattern and manage
         // Use trigger function ?
         if(effects[pattern.name]) {
-            effect_in_use = true
+            // consider that fade is not effect in use cause fading is managed
+            // by changing brightness and will not update colors
+            if(!(effects[pattern.name] instanceof Fade)) {
+                effect_in_use = true
+            }
 
             for (const [pod_id, parameter] of Object.entries(pattern.controls)) {
                 if(parameter == 'speed') {
