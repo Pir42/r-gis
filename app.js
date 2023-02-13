@@ -79,7 +79,8 @@ const effects = {
     'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true),
     'strob_divide': new StrobDivide([seg0, seg1, seg2, seg3]),
     'worm': new WormManager([seg0, seg1, seg2, seg3]),
-    'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true)
+    'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true),
+    'worm_fill': new WormManager([seg0, seg1, seg2, seg3], false, true)
 }
 
 lc.state.pad_1['mode'] = 'keep'

@@ -78,7 +78,17 @@ const patterns = [
             pod_2: 'seg_length',
             pod_3: 'delta'
         },
-    }
+    },
+    {
+        name: 'worm_fill',
+        pad_id: 15,
+        color: 52,
+        controls: {
+            pod_1: 'speed',
+            pod_2: 'seg_length',
+            pod_3: 'delta'
+        },
+    },
 ]
 
 module.exports = patterns
