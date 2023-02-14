@@ -10,7 +10,7 @@ const patterns = [
     {
         name: 'fade',
         pad_id: 4,
-        color: 52,
+        color: 61,
         controls: {
             pod_1: 'speed',
             pod_2: 'min_brightness',
@@ -21,7 +21,7 @@ const patterns = [
     {
         name: 'colors_trans',
         pad_id: 5,
-        color: 1,
+        color: 62,
         controls: {
             pod_1: 'speed'
         },
@@ -29,7 +29,7 @@ const patterns = [
     {
         name: 'strob',
         pad_id: 6,
-        color: 52,
+        color: 1,
         controls: {
             pod_1: 'speed'
         },
@@ -45,7 +45,7 @@ const patterns = [
     {
         name: 'strob_rand',
         pad_id: 11,
-        color: 52,
+        color: 1,
         controls: {
             pod_1: 'speed'
         },
@@ -72,7 +72,7 @@ const patterns = [
     {
         name: 'worm_revert',
         pad_id: 14,
-        color: 1,
+        color: 52,
         controls: {
             pod_1: 'speed',
             pod_2: 'seg_length',

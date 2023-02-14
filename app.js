@@ -13,6 +13,7 @@ const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('.
 const WormManager = require('./lib/effects/WormManager')
 const StrobDivide = require('./lib/effects/StrobDivide')
 const ColorsTrans = require('./lib/effects/ColorsTrans')
+const FadeRand = require('./lib/effects/FadeRand')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -73,11 +74,11 @@ const segmentPad = (pad_id) => {
 // Effect setup
 let effect_in_use = false
 const effects = {
-    'strob': new Strob([seg0, seg1, seg2, seg3]),
-    'fade': new Fade([seg0, seg1, seg2, seg3]),
+    'strob': new Strob([seg0, seg1, seg2, seg3], true),
+    'fade': new FadeRand([seg0, seg1, seg2, seg3]),
     'colors_trans': new ColorsTrans([seg0, seg1, seg2, seg3]),
-    'strob_per_seg': new StrobPerSeg([seg0, seg1, seg2, seg3]),
-    'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true),
+    'strob_per_seg': new StrobPerSeg([seg0, seg1, seg2, seg3], false, true),
+    'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true, true),
     'strob_divide': new StrobDivide([seg0, seg1, seg2, seg3]),
     'worm': new WormManager([seg0, seg1, seg2, seg3]),
     'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true),
@@ -106,24 +107,6 @@ lc.state.pad_16['color'] = 113
 let touch_mode = 'keep'
 let aftertouch = false
 let aftertouch_speed = 40
-let decrease_brightness_per_seg = [
-    {
-        segment: seg0,
-        decrease_cb: undefined
-    },
-    {
-        segment: seg1,
-        decrease_cb: undefined
-    },
-    {
-        segment: seg2,
-        decrease_cb: undefined
-    },
-    {
-        segment: seg3,
-        decrease_cb: undefined
-    }
-]
 
 // Events
 
@@ -133,10 +116,8 @@ lc.on('pad_input', (data) => {
         let seg = segmentPad(data.id)
         if(data.state.light) {
             if (aftertouch) {
-                let decrease_object = decrease_brightness_per_seg.find(s => s.segment == seg)
-                if(decrease_object && decrease_object.decrease_cb) {
-                    clearTimeout(decrease_object.decrease_cb)
-                    decrease_object.decrease_cb = undefined
+                if(seg.decrease_callback) {
+                    seg.clear_decrease_callback()
                 }
             }
             seg.silent = false
@@ -199,45 +180,7 @@ lc.on('pad_release', (data) => {
     if(['1', '2', '9', '10'].includes(data.id) && touch_mode == 'touch') {
         let seg = segmentPad(data.id)
         if(aftertouch) {
-            let color_off = false
-            let speed = aftertouch_speed
-            let retrieved_colors = seg.colors
-            let decrease_object = decrease_brightness_per_seg.find(s => s.segment == seg)
-
-            decrease_object.decrease_cb = () => {
-                let all_luma = []
-                retrieved_colors.forEach(() => all_luma.push(true))
-
-                retrieved_colors = retrieved_colors.map((c, i) => {
-                    let HSL = hexToHSL(intToHex(c))
-                    let luma = HSL[2]
-                    if(luma <= 0) {
-                        all_luma[i] = false
-                    }
-                    
-                    return change_brightness(intToHex(c), 0.7)
-                })
-                
-                color_off = !all_luma.every(Boolean)
-                seg.fill(retrieved_colors, false)
-                ws281x.render()
-
-                if(color_off) {
-                    seg.off()
-                    seg.silent = true
-                    clearTimeout(decrease_object.decrease_cb)
-                    decrease_object.decrease_cb = undefined
-                    return   
-                }
-
-                setTimeout(() => {
-                    if(decrease_object.decrease_cb) {
-                        decrease_object.decrease_cb()
-                    }
-                }, speed)
-            }
-
-            decrease_object.decrease_cb()
+            seg.decrease_brightness_by_color(aftertouch_speed, 0.7, true)
         } else {
             seg.off()
             seg.silent = true
