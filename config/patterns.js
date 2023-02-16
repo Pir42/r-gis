@@ -51,12 +51,11 @@ const patterns = [
         },
     },
     {
-        name: 'strob_divide',
+        name: 'worm_reactive',
         pad_id: 12,
-        color: 1,
+        color: 121,
         controls: {
-            pod_1: 'speed',
-            pod_2: 'divide'
+            pod_1: 'speed'
         },
     },
     {
@@ -88,7 +87,16 @@ const patterns = [
             pod_2: 'seg_length',
             pod_3: 'delta'
         },
-    },
+    }
+    // {
+    //     name: 'strob_divide',
+    //     pad_id: 12,
+    //     color: 1,
+    //     controls: {
+    //         pod_1: 'speed',
+    //         pod_2: 'divide'
+    //     },
+    // }
 ]
 
 module.exports = patterns

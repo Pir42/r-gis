@@ -14,6 +14,7 @@ const WormManager = require('./lib/effects/WormManager')
 const StrobDivide = require('./lib/effects/StrobDivide')
 const ColorsTrans = require('./lib/effects/ColorsTrans')
 const FadeRand = require('./lib/effects/FadeRand')
+const WormReactive = require('./lib/effects/WormReactive')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -72,7 +73,8 @@ const segmentPad = (pad_id) => {
 }
 
 // Effect setup
-let effect_in_use = false
+let is_effect_in_use = false
+let effect_in_use = undefined
 const effects = {
     'strob': new Strob([seg0, seg1, seg2, seg3], true),
     'fade': new FadeRand([seg0, seg1, seg2, seg3]),
@@ -82,7 +84,8 @@ const effects = {
     'strob_divide': new StrobDivide([seg0, seg1, seg2, seg3]),
     'worm': new WormManager([seg0, seg1, seg2, seg3]),
     'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true),
-    'worm_fill': new WormManager([seg0, seg1, seg2, seg3], false, true)
+    'worm_fill': new WormManager([seg0, seg1, seg2, seg3], false, true),
+    'worm_reactive': new WormReactive(allsegs)
 }
 
 lc.state.pad_1['mode'] = 'keep'
@@ -114,6 +117,14 @@ lc.on('pad_input', (data) => {
     if(['1', '2', '9', '10'].includes(data.id)) {
         console.log(`Segment LED control pressed on ${data.id}, should send turn ${data.state.light}`)
         let seg = segmentPad(data.id)
+        
+        if(effect_in_use instanceof WormReactive) {
+            lc.state[`pad_${data.id}`].color = 1
+            lc.light_on_pad(data.id)
+            seg.shift_color = seg.colors[Math.floor(Math.random() * seg.colors.length)]
+            return
+        }
+
         if(data.state.light) {
             if (aftertouch) {
                 if(seg.decrease_callback) {
@@ -177,13 +188,23 @@ lc.on('pad_input', (data) => {
 })
 
 lc.on('pad_release', (data) => {
-    if(['1', '2', '9', '10'].includes(data.id) && touch_mode == 'touch') {
+    if(['1', '2', '9', '10'].includes(data.id)) {
         let seg = segmentPad(data.id)
-        if(aftertouch) {
-            seg.decrease_brightness_by_color(aftertouch_speed, 0.7, true)
-        } else {
-            seg.off()
-            seg.silent = true
+
+        if(effect_in_use instanceof WormReactive) {
+            lc.state[`pad_${data.id}`].color = 17
+            lc.light_on_pad(data.id)
+            seg.shift_color = 0x000000
+            return
+        }
+
+        if(touch_mode == 'touch') {
+            if(aftertouch) {
+                seg.decrease_brightness_by_color(aftertouch_speed, 0.7, (seg) => { seg.silent = true })
+            } else {
+                seg.off()
+                seg.silent = true
+            }
         }
     }
 })
@@ -207,8 +228,10 @@ lc.on('pad_selected', (data) => {
             // consider that fade is not effect in use cause fading is managed
             // by changing brightness and will not update colors
             if(!(effects[pattern.name] instanceof Fade && effects[pattern.name] instanceof FadeRand)) {
-                effect_in_use = true
+                is_effect_in_use = true
             }
+
+            effect_in_use = effects[pattern.name]
 
             for (const [pod_id, parameter] of Object.entries(pattern.controls)) {
                 if(parameter == 'speed') {
@@ -238,7 +261,8 @@ lc.on('pad_deselected', (data) => {
         // should activate pattern and manage
         // Use trigger function ?
         if(effects[pattern.name]) {
-            effect_in_use = false
+            is_effect_in_use = false
+            effect_in_use = undefined
             effects[pattern.name].stop()
         }
     }
@@ -297,7 +321,7 @@ keyboard.input.on('message', (deltaTime, message) => {
     if(code_event == mc.note_on && colors[id]) {
         console.log(`Change the color palette with ${colors[id]}`);
         allsegs.forEach((seg) => {
-            if(effect_in_use) {
+            if(is_effect_in_use) {
                 seg.colors = colors[id]
             } else {
                 seg.fill(colors[id]) 
