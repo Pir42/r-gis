@@ -206,7 +206,7 @@ lc.on('pad_selected', (data) => {
         if(effects[pattern.name]) {
             // consider that fade is not effect in use cause fading is managed
             // by changing brightness and will not update colors
-            if(!(effects[pattern.name] instanceof Fade)) {
+            if(!(effects[pattern.name] instanceof Fade && effects[pattern.name] instanceof FadeRand)) {
                 effect_in_use = true
             }
 
