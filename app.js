@@ -43,7 +43,7 @@ console.info("Assigning LED Segments")
 const seg0 = new Segment(channel, 0, 36)
 const seg1 = new Segment(channel, 37, 74, true)
 const seg2 = new Segment(channel, 75, 111)
-const seg3 = new Segment(channel, 112, 150, true)
+const seg3 = new Segment(channel, 112, 149, true)
 const allsegs = [seg0, seg1, seg2, seg3]
 
 seg0.fill([0xff0000])
