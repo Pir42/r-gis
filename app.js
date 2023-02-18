@@ -15,6 +15,7 @@ const ColorsTrans = require('./lib/effects/ColorsTrans')
 const FadeRand = require('./lib/effects/FadeRand')
 const WormReactive = require('./lib/effects/WormReactive')
 const Auto = require('./lib/effects/Auto')
+const { pod_val_to_exp_brigthness } = require('./lib/helpers/pod_calc')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -327,8 +328,7 @@ lc.on('pot_input', (data) => {
     lc.state[`pod_${data.id}`] = data.state
 
     if(data.id == 8){
-        let value = data.state
-        channel.brightness = (value * 255) / 127
+        channel.brightness = pod_val_to_exp_brigthness(data.state)
         ws281x.render()
         return
     }
