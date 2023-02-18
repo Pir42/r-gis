@@ -76,15 +76,15 @@ const segmentPad = (pad_id) => {
 let is_effect_in_use = false
 let effect_in_use = undefined
 const effects = {
-    'strob': new Strob([seg0, seg1, seg2, seg3], true),
-    'fade': new FadeRand([seg0, seg1, seg2, seg3]),
-    'colors_trans': new ColorsTrans([seg0, seg1, seg2, seg3]),
-    'strob_per_seg': new StrobPerSeg([seg0, seg1, seg2, seg3], false, true),
-    'strob_rand': new StrobPerSeg([seg0, seg1, seg2, seg3], true, true),
-    'strob_divide': new StrobDivide([seg0, seg1, seg2, seg3]),
-    'worm': new WormManager([seg0, seg1, seg2, seg3]),
-    'worm_revert': new WormManager([seg0, seg1, seg2, seg3], true),
-    'worm_fill': new WormManager([seg0, seg1, seg2, seg3], false, true),
+    'strob': new Strob(allsegs, true),
+    'fade': new FadeRand(allsegs),
+    'colors_trans': new ColorsTrans(allsegs),
+    'strob_per_seg': new StrobPerSeg(allsegs, false, true),
+    'strob_rand': new StrobPerSeg(allsegs, true, true),
+    'strob_divide': new StrobDivide(allsegs),
+    'worm': new WormManager(allsegs),
+    'worm_revert': new WormManager(allsegs, true),
+    'worm_fill': new WormManager(allsegs, false, true),
     'worm_reactive': new WormReactive(allsegs)
 }
 
