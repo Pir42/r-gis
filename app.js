@@ -370,16 +370,31 @@ lc.on('pot_input', (data) => {
 
 // Colors (no need for complex class as for the pads... for now)
 
+let additive = false
 keyboard.input.on('message', (deltaTime, message) => {
     const [code_event, id, value] = message
     if(code_event == mc.note_on && colors[id]) {
         console.log(`Change the color palette with ${colors[id]}`);
+        let colors_to_assign = colors[id]
+
         allsegs.forEach((seg) => {
+            if(additive) {
+                colors_to_assign = seg.colors.concat(colors[id])
+            }
+
             if(is_effect_in_use) {
-                seg.colors = colors[id]
+                seg.colors = colors_to_assign
             } else {
-                seg.fill(colors[id]) 
+                seg.fill(colors_to_assign) 
             }
         })
+    }
+
+    if(id == 72) {
+        if(code_event == mc.note_on) {
+            additive = true
+        } else if(code_event == mc.note_off) {
+            additive = false
+        }
     }
 })
