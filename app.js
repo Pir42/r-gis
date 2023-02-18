@@ -112,7 +112,8 @@ const effects = {
     'auto_gentle': new Auto(allsegs, auto_gentle_effects),
     'auto_hard': new Auto(allsegs, auto_hard_effects),
     'strob': new Strob(allsegs, true),
-    'fade': new FadeRand(allsegs),
+    'fade': new Fade(allsegs),
+    'fade_rand': new FadeRand(allsegs),
     'colors': new Colors(allsegs),
     'colors_trans': new ColorsTrans(allsegs),
     'strob_per_seg': new StrobPerSeg(allsegs),
@@ -130,6 +131,24 @@ const change_fading_fx_mode = (value) => {
         if(effect.fade != undefined) {
             effect.fade = value
         }
+    }
+}
+
+const assign_parameter_to_effect = (effect, parameter, value) => {
+    if(parameter == 'speed') {
+        effect.speed = effect.speed_calc(value)
+    } else if(parameter == 'min_brightness') {
+        effect.min_brightness = value * 255 / 127
+    } else if(parameter == 'max_brightness') {
+        effect.max_brightness = value * 255 / 127
+    } else if(parameter == 'seg_length') {
+        effect.worm_length = effect.seg_length_calc(value)
+    } else if(parameter == 'delta') {
+        effect.delta = effect.delta_calc(value)
+    } else if(parameter == 'divide') {
+        effect.divide = effect.divide_calc(value)
+    } else if(parameter == 'effects_speed') {
+        effect.change_current_effect_speed(value)
     }
 }
 
@@ -157,7 +176,7 @@ let touch_mode = 'keep'
 let aftertouch = false
 let aftertouch_speed = 40
 
-// Events
+// Events on PADs
 
 lc.on('pad_input', (data) => {
     if(['1', '2', '9', '10'].includes(data.id)) {
@@ -285,21 +304,7 @@ lc.on('pad_selected', (data) => {
             effect_in_use = effects[pattern.name]
 
             for (const [pod_id, parameter] of Object.entries(pattern.controls)) {
-                if(parameter == 'speed') {
-                    effects[pattern.name].speed = effects[pattern.name].speed_calc(lc.state[pod_id])
-                } else if(parameter == 'min_brightness') {
-                    effects[pattern.name].min_brightness = lc.state[pod_id] * 255 / 127
-                } else if(parameter == 'max_brightness') {
-                    effects[pattern.name].max_brightness = lc.state[pod_id] * 255 / 127
-                } else if(parameter == 'seg_length') {
-                    effects[pattern.name].worm_length = effects[pattern.name].seg_length_calc(lc.state[pod_id])
-                } else if(parameter == 'delta') {
-                    effects[pattern.name].delta = effects[pattern.name].delta_calc(lc.state[pod_id])
-                } else if(parameter == 'divide') {
-                    effects[pattern.name].divide = effects[pattern.name].divide_calc(lc.state[pod_id])
-                } else if(parameter == 'effects_speed') {
-                    effects[pattern.name].change_current_effect_speed(lc.state[pod_id])
-                }
+                assign_parameter_to_effect(effect_in_use, parameter, lc.state[pod_id])
             }
             effects[pattern.name].run()
         }
@@ -347,23 +352,8 @@ lc.on('pot_input', (data) => {
             let effect = effects[pattern.name]
             let parameter = pattern.controls[`pod_${data.id}`]
             if(effect && parameter) {
-                if(parameter == 'speed') {
-                    effect.speed = effect.speed_calc(data.state)
-                } else if(parameter == 'min_brightness') {
-                    effect.min_brightness = data.state * 255 / 127
-                } else if(parameter == 'max_brightness') {
-                    effect.max_brightness = data.state * 255 / 127
-                } else if(parameter == 'seg_length') {
-                    effect.worm_length = effect.seg_length_calc(data.state)
-                } else if(parameter == 'delta') {
-                    effect.delta = effect.delta_calc(data.state)
-                } else if(parameter == 'divide') {
-                    effect.divide = effect.divide_calc(data.state)
-                } else if(parameter == 'effects_speed') {
-                    effect.change_current_effect_speed(data.state)
-                }
+                assign_parameter_to_effect(effect, parameter, data.state)
             }
-
         }
     }
 })

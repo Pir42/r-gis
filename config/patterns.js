@@ -1,15 +1,23 @@
 const patterns = [
     {
-        name: 'auto',
+        name: 'auto_gentle',
         pad_id: 3,
-        color: 1,
+        color: 3,
+        controls: {
+            pod_1: 'speed'
+        },
+    },
+    {
+        name: 'auto_hard',
+        pad_id: 4,
+        color: 3,
         controls: {
             pod_1: 'speed'
         },
     },
     {
         name: 'fade',
-        pad_id: 4,
+        pad_id: 5,
         color: 61,
         controls: {
             pod_1: 'speed',
@@ -20,7 +28,7 @@ const patterns = [
     ,
     {
         name: 'colors_trans',
-        pad_id: 5,
+        pad_id: 6,
         color: 62,
         controls: {
             pod_1: 'speed'
@@ -28,14 +36,6 @@ const patterns = [
     },
     {
         name: 'strob',
-        pad_id: 6,
-        color: 1,
-        controls: {
-            pod_1: 'speed'
-        },
-    },
-    {
-        name: 'strob_per_seg',
         pad_id: 7,
         color: 1,
         controls: {
@@ -43,7 +43,7 @@ const patterns = [
         },
     },
     {
-        name: 'strob_rand',
+        name: 'strob_per_seg',
         pad_id: 11,
         color: 1,
         controls: {
@@ -51,8 +51,17 @@ const patterns = [
         },
     },
     {
-        name: 'worm_reactive',
+        name: 'strob_divide',
         pad_id: 12,
+        color: 1,
+        controls: {
+            pod_1: 'speed',
+            pod_2: 'divide'
+        },
+    },
+    {
+        name: 'worm_reactive',
+        pad_id: 13,
         color: 121,
         controls: {
             pod_1: 'speed'
@@ -60,16 +69,6 @@ const patterns = [
     },
     {
         name: 'worm',
-        pad_id: 13,
-        color: 52,
-        controls: {
-            pod_1: 'speed',
-            pod_2: 'seg_length',
-            pod_3: 'delta'
-        },
-    },
-    {
-        name: 'worm_revert',
         pad_id: 14,
         color: 52,
         controls: {
@@ -79,7 +78,7 @@ const patterns = [
         },
     },
     {
-        name: 'worm_fill',
+        name: 'worm_revert',
         pad_id: 15,
         color: 52,
         controls: {
@@ -87,14 +86,15 @@ const patterns = [
             pod_2: 'seg_length',
             pod_3: 'delta'
         },
-    }
+    },
     // {
-    //     name: 'strob_divide',
-    //     pad_id: 12,
-    //     color: 1,
+    //     name: 'worm_fill',
+    //     pad_id: 15,
+    //     color: 52,
     //     controls: {
     //         pod_1: 'speed',
-    //         pod_2: 'divide'
+    //         pod_2: 'seg_length',
+    //         pod_3: 'delta'
     //     },
     // }
 ]
