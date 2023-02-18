@@ -9,12 +9,12 @@ const Strob = require('./lib/effects/Strob')
 const Fade = require('./lib/effects/Fade')
 const Colors = require('./lib/effects/Colors')
 const StrobPerSeg = require('./lib/effects/StrobPerSeg')
-const { intToHex, hexToHSL, HSLToHex, hexToInt, change_brightness } = require('./lib/helpers/colors')
 const WormManager = require('./lib/effects/WormManager')
 const StrobDivide = require('./lib/effects/StrobDivide')
 const ColorsTrans = require('./lib/effects/ColorsTrans')
 const FadeRand = require('./lib/effects/FadeRand')
 const WormReactive = require('./lib/effects/WormReactive')
+const Auto = require('./lib/effects/Auto')
 
 // Helpers
 const speed_calc_pot = (value, min) => min - (value * min / 127)
@@ -75,9 +75,44 @@ const segmentPad = (pad_id) => {
 // Effect setup
 let is_effect_in_use = false
 let effect_in_use = undefined
+
+// Setting up Auto FX
+let autog_fade_fx = new Fade(allsegs)
+autog_fade_fx.speed = 400
+let autog_colors_fx = new ColorsTrans(allsegs)
+autog_colors_fx.speed = ColorsTrans.MAX_STEP_COLORS
+let autog_worm_fx = new WormManager(allsegs)
+autog_worm_fx.worm_length = WormManager.MAX_SEG_LENGTH
+autog_worm_fx.speed = 500
+let autog_worm_revert_fx = new WormManager(allsegs, true)
+autog_worm_revert_fx.worm_length = WormManager.MAX_SEG_LENGTH
+autog_worm_revert_fx.speed = 500
+let autog_strob_fx = new Strob(allsegs, true)
+
+let auto_gentle_effects = [autog_fade_fx, autog_colors_fx, autog_worm_fx, autog_worm_revert_fx, autog_strob_fx]
+
+let autoh_strob_fx = new Strob(allsegs, false)
+autoh_strob_fx.speed = 100
+let autoh_strob_per_seg_fx = new StrobPerSeg(allsegs)
+autoh_strob_per_seg_fx.speed = 200
+let autoh_strob_divide_fx = new StrobDivide(allsegs)
+autoh_strob_divide_fx.speed = 140
+autoh_strob_fx.divide = StrobDivide.MAX_DIVIDE
+let autoh_worm_fx = new WormManager(allsegs)
+autoh_worm_fx.worm_length = 3
+autoh_worm_fx.speed = 50
+let autoh_worm_revert_fx = new WormManager(allsegs, true)
+autoh_worm_revert_fx.worm_length = 5
+autoh_worm_revert_fx.speed = 100
+
+let auto_hard_effects = [autoh_strob_fx, autoh_strob_fx, autoh_strob_per_seg_fx, autoh_strob_divide_fx, autoh_worm_fx, autoh_worm_revert_fx]
+
 const effects = {
+    'auto_gentle': new Auto(allsegs, auto_gentle_effects),
+    'auto_hard': new Auto(allsegs, auto_hard_effects),
     'strob': new Strob(allsegs, true),
     'fade': new FadeRand(allsegs),
+    'colors': new Colors(allsegs),
     'colors_trans': new ColorsTrans(allsegs),
     'strob_per_seg': new StrobPerSeg(allsegs, false, true),
     'strob_rand': new StrobPerSeg(allsegs, true, true),
@@ -88,6 +123,7 @@ const effects = {
     'worm_reactive': new WormReactive(allsegs)
 }
 
+// PADs setup
 lc.state.pad_1['mode'] = 'keep'
 lc.state.pad_2['mode'] = 'keep'
 lc.state.pad_9['mode'] = 'keep'
@@ -246,6 +282,8 @@ lc.on('pad_selected', (data) => {
                     effects[pattern.name].delta = effects[pattern.name].delta_calc(lc.state[pod_id])
                 } else if(parameter == 'divide') {
                     effects[pattern.name].divide = effects[pattern.name].divide_calc(lc.state[pod_id])
+                } else if(parameter == 'effects_speed') {
+                    effects[pattern.name].change_current_effect_speed(lc.state[pod_id])
                 }
             }
             effects[pattern.name].run()
@@ -307,6 +345,8 @@ lc.on('pot_input', (data) => {
                     effect.delta = effect.delta_calc(data.state)
                 } else if(parameter == 'divide') {
                     effect.divide = effect.divide_calc(data.state)
+                } else if(parameter == 'effects_speed') {
+                    effect.change_current_effect_speed(data.state)
                 }
             }
 
