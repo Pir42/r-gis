@@ -114,13 +114,22 @@ const effects = {
     'fade': new FadeRand(allsegs),
     'colors': new Colors(allsegs),
     'colors_trans': new ColorsTrans(allsegs),
-    'strob_per_seg': new StrobPerSeg(allsegs, false, true),
-    'strob_rand': new StrobPerSeg(allsegs, true, true),
+    'strob_per_seg': new StrobPerSeg(allsegs),
+    'strob_rand': new StrobPerSeg(allsegs, true),
     'strob_divide': new StrobDivide(allsegs),
     'worm': new WormManager(allsegs),
     'worm_revert': new WormManager(allsegs, true),
     'worm_fill': new WormManager(allsegs, false, true),
     'worm_reactive': new WormReactive(allsegs)
+}
+
+// Helpers function for FX
+const change_fading_fx_mode = (value) => {
+    for (const [effect_name, effect] of Object.entries(effects)) {
+        if(effect.fade != undefined) {
+            effect.fade = value
+        }
+    }
 }
 
 // PADs setup
@@ -201,8 +210,11 @@ lc.on('pad_input', (data) => {
             lc.light_on_pad(9)
             lc.light_on_pad(10)
 
-            lc.light_off_pad(16) // turn off aftertouch
+            // turn off aftertouch + be sure to turn off fading mode
+            lc.light_off_pad(16)
             aftertouch = false
+            change_fading_fx_mode(false)
+
 
             console.log('Turn off Touch mode for effects')
             touch_mode = 'keep'
@@ -210,14 +222,16 @@ lc.on('pad_input', (data) => {
         }
     }
 
-    // AfterTouch Mode
+    // AfterTouch or Fading Mode
     if(data.id == 16) {
         if(!lc.state.pad_8.light) {
             aftertouch = lc.state.pad_16.light
-        }
-        else {
-            lc.light_off_pad(16) // force to turn off aftertouch
-            aftertouch = lc.state.pad_16.light
+            // Turn off fading beacause aftertouch will have priority
+            if(aftertouch) {
+                change_fading_fx_mode(false)
+            }
+        } else {
+            change_fading_fx_mode(lc.state.pad_16.light)
         }
     }
 
