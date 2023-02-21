@@ -79,15 +79,15 @@ let effect_in_use = undefined
 
 // Setting up Auto FX
 let autog_fade_fx = new Fade(allsegs)
-autog_fade_fx.speed = 400
+autog_fade_fx.speed = 50
 let autog_colors_fx = new ColorsTrans(allsegs)
 autog_colors_fx.speed = ColorsTrans.MAX_STEP_COLORS
 let autog_worm_fx = new WormManager(allsegs)
 autog_worm_fx.worm_length = WormManager.MAX_SEG_LENGTH
-autog_worm_fx.speed = 500
+autog_worm_fx.speed = 300
 let autog_worm_revert_fx = new WormManager(allsegs, true)
 autog_worm_revert_fx.worm_length = WormManager.MAX_SEG_LENGTH
-autog_worm_revert_fx.speed = 500
+autog_worm_revert_fx.speed = 300
 let autog_strob_fx = new Strob(allsegs, true)
 
 let auto_gentle_effects = [autog_fade_fx, autog_colors_fx, autog_worm_fx, autog_worm_revert_fx, autog_strob_fx]
@@ -98,10 +98,10 @@ let autoh_strob_per_seg_fx = new StrobPerSeg(allsegs)
 autoh_strob_per_seg_fx.speed = 200
 let autoh_strob_divide_fx = new StrobDivide(allsegs)
 autoh_strob_divide_fx.speed = 140
-autoh_strob_fx.divide = StrobDivide.MAX_DIVIDE
+autoh_strob_divide_fx.divide = StrobDivide.MAX_DIVIDE
 let autoh_worm_fx = new WormManager(allsegs)
 autoh_worm_fx.worm_length = 3
-autoh_worm_fx.speed = 50
+autoh_worm_fx.speed = 10
 let autoh_worm_revert_fx = new WormManager(allsegs, true)
 autoh_worm_revert_fx.worm_length = 5
 autoh_worm_revert_fx.speed = 100
@@ -215,6 +215,11 @@ lc.on('pad_input', (data) => {
             lc.light_off_pad(2)
             lc.light_off_pad(9)
             lc.light_off_pad(10)
+
+            // turn off aftertouch + be sure to turn off fading mode
+            lc.light_off_pad(16)
+            aftertouch = false
+            change_fading_fx_mode(false)
 
             console.log('Turn on Touch mode for effects')
             touch_mode = 'touch'
