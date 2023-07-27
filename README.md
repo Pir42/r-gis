@@ -1,4 +1,6 @@
+<div style="width:130px">
 ![Regis Logo](/assets/logo.png?raw=true)
+</div>
 
 # Régis - Pilot ws281x strips with a MIDI controller
 
