@@ -11,7 +11,7 @@ First of all :
 ```
 npm install
 ```
-You will need to check what name your device is given by the computer and replace the names in `app.js` of variables `device_name` (keyboard) and `device_name_2` (pads). To get these values you can use the library `midi` in the node shell :
+You will need to check what name your device is given by the computer and replace the names of variables `device_name`(keyboard) and `device_name_2`(pads) in `app.js`. To get these values you can use the library `midi` in the node shell :
 ```js
 const midi = require('midi')
 const input = new midi.Input();
@@ -43,7 +43,7 @@ For the patterns here is the scheme of one item in the array of patterns :
     },
 }
 ```
-For the code colors you can check them [here](https://i0.wp.com/www.partsnotincluded.com/wp-content/uploads/2018/09/LKMiniII_LED127_Lbl.jpg)>
+For the code colors you can check them [here](https://i0.wp.com/www.partsnotincluded.com/wp-content/uploads/2018/09/LKMiniII_LED127_Lbl.jpg)
 
 ### Launch
 ```
